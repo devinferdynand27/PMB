@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProdiController;
+use App\Http\Controllers\MahasiswaController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -27,3 +28,9 @@ Route::post('/_act_register', [AuthController::class, 'register']);
 Route::get('/prodi', [ProdiController::class, 'index']);
 Route::post('/_act_add_prodi', [ProdiController::class, 'store']);
 Route::put('/prodi_act_edit/{id}', [ProdiController::class, 'update']);
+
+//mahasiswa
+Route::post('/mahasiswa-pendaftaran', [MahasiswaController::class, 'store']);
+Route::put('/mahasiswa/acc/{mid}', [MahasiswaController::class, 'acc']);
+Route::get('/mahasiswa/pending', [MahasiswaController::class, 'getMahasiswaPending']);
+Route::get('/mahasiswa-all', [MahasiswaController::class, 'getMahasiswaAll']);
