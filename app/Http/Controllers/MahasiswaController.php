@@ -19,6 +19,7 @@ class MahasiswaController extends Controller
                 'no_telp' => 'nullable',
                 'mpid' => 'nullable',
                 'semester_masuk' => 'nullable|integer',
+                'pid' => 'nullable|integer',
                 'upload_file' => 'nullable|file|mimes:jpg,png,pdf|max:2048',
             ]);
 
@@ -33,18 +34,20 @@ class MahasiswaController extends Controller
                 $file->move($destinationPath, $fileName);
             }
             DB::insert("
-                INSERT INTO mahasiswa 
-                (nama_lengkap, tanggal_lahir, alamat, no_telp, mpid, semester_masuk, upload_file, nim, status, create_time, acc_time)
-                VALUES (?, ?, ?, ?, ?, ?, ?, NULL, 0, NOW(), NULL)
-            ", [
-                $request->nama_lengkap,
-                $request->tanggal_lahir,
-                $request->alamat,
-                $request->no_telp,
-                $request->mpid,
-                $request->semester_masuk,
-                $fileName
-            ]);
+            INSERT INTO mahasiswa 
+            (nama_lengkap, tanggal_lahir, alamat, no_telp, mpid, semester_masuk, upload_file, nim, status, create_time, acc_time, pid)
+            VALUES (?, ?, ?, ?, ?, ?, ?, NULL, 0, NOW(), NULL, ?)
+        ", [
+            $request->nama_lengkap,
+            $request->tanggal_lahir,
+            $request->alamat,
+            $request->no_telp,
+            $request->mpid,
+            $request->semester_masuk,
+            $fileName,   // upload_file
+            $request->pid
+        ]);
+        
             return response()->json([
                 'success' => true,
                 'message' => 'Mahasiswa berhasil ditambahkan'
@@ -96,33 +99,55 @@ class MahasiswaController extends Controller
 }
 public function getMahasiswaPending()
 {
-    $data = DB::select("select * from mahasiswa m join mst_prodi p on p.mpid = m.mid and m.status = 0;");
+    $data = DB::select("
+        SELECT *  , per.nama_lengkap as nama_akun
+        FROM mahasiswa m 
+        JOIN mst_prodi p ON p.mpid = m.mpid
+        LEFT JOIN person per ON per.pid = m.pid
+        WHERE m.status = 0
+    ");
     $basePath = url('/mahasiswa');
     foreach ($data as $d) {
         if ($d->upload_file !== null) {
             $d->upload_file = $basePath . '/' . $d->upload_file;
         }
+
+        if (isset($d->password)) {
+            unset($d->password);
+        }
     }
+
     return response()->json([
         'success' => true,
         'message' => 'List mahasiswa status 0',
         'results' => $data
     ], 200);
 }
-    public function getMahasiswaAll()
-    {
-        $data = DB::select("select * from mahasiswa m join mst_prodi p on p.mpid = m.mid and m.status = 1;");
-        $basePath = url('/mahasiswa');
-        foreach ($data as $d) {
+
+    public function getMahasiswaAll(){
+    $data = DB::select("
+        SELECT *  , per.nama_lengkap as nama_akun
+        FROM mahasiswa m 
+        JOIN mst_prodi p ON p.mpid = m.mpid
+        LEFT JOIN person per ON per.pid = m.pid
+        WHERE m.status = 1
+    ");
+    $basePath = url('/mahasiswa');
+    foreach ($data as $d) {
         if ($d->upload_file !== null) {
             $d->upload_file = $basePath . '/' . $d->upload_file;
         }
+
+        if (isset($d->password)) {
+            unset($d->password);
+        }
     }
+
     return response()->json([
         'success' => true,
-        'message' => 'List mahasiswa status 0',
+        'message' => 'List mahasiswa status 1',
         'results' => $data
     ], 200);
-    }
+}
 
 }
