@@ -22,6 +22,36 @@ class ProdiController extends Controller
 
     public function store(Request $request)
     {
+
+        $mpid = $request->mpid;
+
+        if (!empty($mpid)) {
+            $existing = DB::selectOne("SELECT * FROM mst_prodi WHERE mpid = ? LIMIT 1", [$mpid]);
+        
+            if (!$existing) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data prodi tidak ditemukan'
+                ], 404);
+            }
+            DB::update("
+                UPDATE mst_prodi 
+                SET kode_prodi = ?, nama_prodi = ?, fakultas = ?
+                WHERE mpid = ?
+            ", [
+                $request->kode_prodi,
+                $request->nama_prodi,
+                $request->fakultas,
+                $mpid
+            ]);
+            $updated = DB::selectOne("SELECT * FROM mst_prodi WHERE mpid = ?", [$mpid]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Prodi berhasil diperbarui',
+                'data' => $updated
+            ]);
+        }
+
         // Validasi input
         $request->validate([
             'kode_prodi' => 'required|string|max:10',
