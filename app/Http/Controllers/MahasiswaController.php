@@ -63,7 +63,7 @@ class MahasiswaController extends Controller
         }
     }
 
-    public function acc($mid){
+public function acc($mid){
     try {
         $nim = date('dmY') . $mid;  
         $accTime = date('Y-m-d H:i:s');
@@ -97,6 +97,43 @@ class MahasiswaController extends Controller
         ], 500);
     }
 }
+
+public function no_acc($mid){
+    try {
+        $accTime = date('Y-m-d H:i:s');
+
+        $affected = DB::update("
+            UPDATE mahasiswa
+            SET acc_time = ?, status = 3
+            WHERE mid = ?
+        ", [
+            $accTime,
+            $mid
+        ]);
+
+        if ($affected === 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data tidak ditemukan'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pendaftaran berhasil di-Tolak',
+            'acc_time' => $accTime
+        ], 200);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal Tolak pendaftaran',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+
 public function getMahasiswaPending()
 {
     $data = DB::select("
@@ -149,5 +186,34 @@ public function getMahasiswaPending()
         'results' => $data
     ], 200);
 }
+
+
+public function GetDataMahasiswaPID($pid){
+    $data = DB::select("
+        SELECT *  , per.nama_lengkap as nama_akun
+        FROM mahasiswa m 
+        JOIN mst_prodi p ON p.mpid = m.mpid
+        LEFT JOIN person per ON per.pid = m.pid
+        WHERE m.mid = $pid
+    ");
+    $basePath = url('/mahasiswa');
+    foreach ($data as $d) {
+        if ($d->upload_file !== null) {
+            $d->upload_file = $basePath . '/' . $d->upload_file;
+        }
+
+        if (isset($d->password)) {
+            unset($d->password);
+        }
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'List mahasiswa status 1',
+        'results' => $data
+    ], 200);
+}
+
+
 
 }
