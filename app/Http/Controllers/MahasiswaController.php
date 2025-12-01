@@ -194,7 +194,7 @@ public function GetDataMahasiswaPID($pid){
         FROM mahasiswa m 
         JOIN mst_prodi p ON p.mpid = m.mpid
         LEFT JOIN person per ON per.pid = m.pid
-        WHERE m.mid = $pid
+        WHERE per.pid = $pid
     ");
     $basePath = url('/mahasiswa');
     foreach ($data as $d) {

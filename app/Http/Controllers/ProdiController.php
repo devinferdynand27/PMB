@@ -87,9 +87,5 @@ class ProdiController extends Controller
     }
 
 
-    function edit_act($pid){
-        
-    }
-
 }
 
