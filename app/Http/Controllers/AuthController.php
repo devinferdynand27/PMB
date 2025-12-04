@@ -67,7 +67,11 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => $hashedPassword
         ]);
+        
         $user = DB::selectOne("SELECT * FROM person WHERE pid = ?", [$pid]);
+        if (isset($user->password)) {
+            unset($user->password);
+        }
         return response()->json([
             'success' => true,
             'message' => 'Register berhasil',
